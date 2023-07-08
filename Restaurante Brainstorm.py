@@ -1,3 +1,126 @@
+from tkinter import *
+import psycopg2
+import random
+import time
+from tkinter import filedialog,messagebox
+
+def salidaPrincipal():
+    ventana.destroy()
+
+Title = ("arial black", 25)
+Subtitle = ("Cambria", 12)
+
+ventana = Tk()
+ventana.geometry("800x700")
+ventana.title("RESTAURANTE")
+ventana.config(bg="#FF9933")
+
+marcoPrincipal = Frame(ventana, bd="10", relief=RIDGE, bg="#FF9933")
+marcoPrincipal.pack(side=TOP)
+
+tituloPrincipal = Label(marcoPrincipal, text="Restaurante BrainStorm", font=Title, fg="#202020", bg="#FF9933")
+tituloPrincipal.pack()
+
+subPrincipal = Label(marcoPrincipal, bd=5, text="BIENVENIDOS", font=Subtitle, fg="#202020", bg="#FF9933")
+subPrincipal.pack()
+
+#Diesño de ventana primer ventana secundaria
+def ventanaReserva():
+    ventana_reserva = Toplevel()
+    ventana_reserva.title("Datos en PostgreSQL")
+    ventana_reserva.geometry("600x600")
+    ventana_reserva.config(bg="#202020")
+    main_title = Label(ventana_reserva, text="Registro para reserva",
+                       font=Subtitle, bg="#FF9933",
+                       fg="white")
+    main_title.pack()
+
+    def guardar_nueva_reserva(nombre, cantidad, contacto):
+        #print(nombre) #print(cantidad) #print(contacto)
+        conn = psycopg2.connpect(
+            host='localhost',
+            user='postgres',
+            password='Admin',
+            database='postgres')
+        cursor = conn.cursor()
+        query = '''INSERT INTO reservas(nombre, cantidad, contacto) VALUES (%s, %s, %s)'''
+        cursor.execute(query, (nombre, cantidad, contacto))
+        print("Datos guardados")
+        conn.commit()
+        conn.close()
+            
+        entry_nombre.delete(0, END)
+        entry_cantidad.delete(0, END)
+        entry_contacto.delete(0, END)
+        #mostrar_reservas()
+
+
+    def mostrar_reservas():
+        conn = psycopg2.connect(
+            host='localhost',
+            user='postgres',
+            password='Admin',
+            database='postgres')
+        cursor = conn.cursor()
+        query = '''SELECT * FROM reservas'''
+        cursor.execute(query)
+
+        row = cursor.fetchall()
+
+        listbox = Listbox(frame, width=30, height=5)
+        listbox.grid(row=12, columnspan=4, sticky=W+E)
+
+        for x in row:
+            listbox.insert(END, x)
+
+        print(row)
+
+        conn.commit()
+        conn.close()
+
+    def buscar(id):
+        conn = psycopg2.connect(
+            host='localhost',
+            user='postgres',
+            password='Admin',
+            database='reservaciones')
+        cursor = conn.cursor()
+        query = '''SELECT * FROM reservas WHERE id=%s'''
+        cursor.execute(query, (id))
+
+        row = cursor.fetchone()
+
+        messagebox.showinfo("Informacion", message=row)
+        print(row)
+
+        conn.commit()
+        conn.close()
+
+        id_buscar.delete(0, END)
+
+    def mostrar():
+        mostrar_reservas()
+
+    def eliminar(id):
+        conn = psycopg2.connect(
+            host='localhost',
+            user='postgres',
+            password='Admin',
+            database='reservaciones')
+        cursor = conn.cursor()
+        query = '''DELETE FROM reservas WHERE id={} RETURNING *'''.format(id)
+        cursor.execute(query, (id))
+
+        var = cursor.fetchone()
+
+        messagebox.showinfo("Informacion", message=var)
+        print(var)
+
+        conn.commit()
+        conn.close()
+
+        id_eliminar.delete(0, END)
+
 ##########################################################
 #Perte 3 Giunta Pilar
 # Definimos los Valores de la comida 
